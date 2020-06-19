@@ -1,0 +1,39 @@
+public class Codec {
+
+    // Preorder traversal, 则第一个数为根，下一个数比为left subtree的根
+    
+    // Encodes a tree to a single string.
+    public String serialize(TreeNode root) {
+        StringBuilder sb = new StringBuilder();
+        helper(root, sb);
+        return sb.toString();
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        List<String> stream = Arrays.asList(data.trim().split(" ") /*最后多一个" ",String[]*/);
+        //String[] => List<String> => Iterator<String>
+        return hp(stream.iterator());
+    }
+    public void helper(TreeNode root, StringBuilder sb){
+        if(root == null) {
+            sb.append("N");
+            sb.append(" ");
+            return;
+        }
+        sb.append(root.val);
+        sb.append(" ");
+        helper(root.left, sb);
+        helper(root.right, sb);
+    }
+    
+    public TreeNode hp(Iterator<String> itr){
+        if(itr == null || !itr.hasNext()) return null;
+        String val = itr.next();
+        if (val.equals("N")) return null;
+        TreeNode root = new TreeNode(Integer.parseInt(val));
+        root.left = hp(itr);
+        root.right = hp(itr);
+        return root;
+    }
+}
