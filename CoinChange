@@ -1,0 +1,54 @@
+/*
+You are given coins of different denominations and a total amount of money amount. Write a function to compute the fewest number of coins that you need to make up that amount. If that amount of money cannot be made up by any combination of the coins, return -1.
+
+Example 1:
+
+Input: coins = [1, 2, 5], amount = 11
+Output: 3 
+Explanation: 11 = 5 + 5 + 1
+*/
+class Solution {
+    public int coinChange(int[] coins, int amount) {
+        int []dp = new int[amount+1];
+        Arrays.fill(dp, amount + 1);
+        dp[0] = 0;
+        
+        /*
+        原本的二维dp数组, dp[i][n] 使用first i types of coin, 得到n的解个数
+        int val = coins[i]; //dp[i][n] 来自
+        上一轮的dp[i-1][n]（本轮一个coin都不取）
+        以及dp[i][n-val]（本轮可能使用任意多个coins[i]）
+        dp[i][n] = min(dp[i-1][n], dp[i-1][n - k*val] + k(任意k满足n-k*val >=0) )
+        但是n从val到amount更新，可以使用本轮i的dp[i][n]. 比如coins[2] = 4, dp[0] = 0:
+        n = 4， dp[4] = dp[0] + 1, 这个dp[4]是这一轮更新好的，可以在n=8时重复使用dp[4] + 1
+        */
+        for(int i = 0; i < coins.length; i++){
+            for(int n = coins[i]; n<= amount; n++){ 
+            if (n - coins[i] >= 0)
+                dp[n] = Math.min (dp[n], dp[n - coins[i]] + 1); 
+            }
+        }
+        return dp[amount] == amount + 1 ? -1 : dp[amount];
+    }
+    
+    //跳k更新，考虑在i轮时取几个coins[i]。由于n时变小的, 所以dp[n]一定是i-1轮的。dp[n+k*val]可能反复更新成更小的值
+    public int coinChange(int[] coins, int amount) {
+        int []dp = new int[amount+1];
+        Arrays.fill(dp, Integer.MAX_VALUE);
+        dp[0] = 0;
+
+        for(int i = 0; i < coins.length; i++){
+            int val = coins[i];
+            for(int n = amount-val; n >= 0; n--){ //本轮只能选择coins[i]
+                //如果要strictly从上一轮的i-1的dp值更新，则要从后面往前更新
+                //dp[n+k*val] 来自于dp[n], dp[n+k*val] = dp[n]+k, 跳着k更新
+                if(dp[n] != Integer.MAX_VALUE) {
+                    for(int k = 0; n+k*val <= amount; k++)
+                        // 只更新比n大的位置，由于n时变小的所以dp[n]一定是i-1轮的
+                        dp[n+k*val] = Math.min(dp[n+k*val], dp[n] + k); 
+                }
+            }
+        }
+        return dp[amount] == Integer.MAX_VALUE ? -1 : dp[amount];
+    }
+}
